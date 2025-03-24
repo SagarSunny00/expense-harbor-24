@@ -9,14 +9,19 @@ const Index = () => {
   useEffect(() => {
     const checkConnection = async () => {
       try {
+        console.log('Checking Supabase connection...');
         // A simple query to check if we can connect to Supabase
         const { data, error } = await supabase.from('fake_table').select('*').limit(1);
         
         // We expect an error about the table not existing, but the connection worked
-        if (error && error.code !== '42P01') {
+        if (error && error.code === '42P01') {
+          console.log('Supabase connection successful (expected table not found error)');
+          setConnectionStatus('connected');
+        } else if (error) {
           console.error('Supabase connection error:', error);
           setConnectionStatus('error');
         } else {
+          console.log('Supabase connection successful');
           setConnectionStatus('connected');
         }
       } catch (err) {
@@ -42,9 +47,16 @@ const Index = () => {
             <p className="text-green-600">Successfully connected to Supabase!</p>
           )}
           {connectionStatus === 'error' && (
-            <p className="text-red-600">
-              Error connecting to Supabase. Please check your credentials in src/lib/supabase.ts
-            </p>
+            <div className="text-red-600">
+              <p>Error connecting to Supabase.</p>
+              <p className="mt-2 text-sm">Make sure to:</p>
+              <ol className="list-decimal pl-5 mt-1 text-sm">
+                <li>Create a .env file in the root directory</li>
+                <li>Add your Supabase URL as VITE_SUPABASE_URL</li>
+                <li>Add your anon key as VITE_SUPABASE_ANON_KEY</li>
+                <li>Restart the development server</li>
+              </ol>
+            </div>
           )}
         </div>
 
